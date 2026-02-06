@@ -1,0 +1,22 @@
+        SELECT
+            PCR.CONTACT_RELATIONSHIP_ID,
+            PCR.PERSON_ID,
+            ''AW_CONTACT'' AS CATEGORY,
+            PCR.CONTACT_PERSON_ID,
+            PCR.CONTACT_TYPE,
+            LKUP.MEANING,
+            LKUP.ENABLED_FLAG,
+            PCR.DATE_START,
+            PCR.DATE_END
+        FROM APPS.PER_CONTACT_RELATIONSHIPS PCR
+        LEFT JOIN APPS.FND_LOOKUP_VALUES LKUP
+            ON LKUP.LOOKUP_CODE = PCR.CONTACT_TYPE
+            AND LKUP.LOOKUP_TYPE = ''CONTACT''
+            AND LKUP.ZD_EDITION_NAME = ''SET1''
+        WHERE
+            TRUNC(SYSDATE) BETWEEN PCR.DATE_START AND NVL(PCR.DATE_END, DATE ''4712-12-31'')
+            AND EXISTS (SELECT 1
+                        FROM DQ_PEOPLE_STATUS_V PS
+                        WHERE PS.PERSON_ID = PCR.PERSON_ID
+                        AND PS.CATEGORY = ''ACTIVE_WORKERS'')
+        ORDER BY PCR.PERSON_ID
