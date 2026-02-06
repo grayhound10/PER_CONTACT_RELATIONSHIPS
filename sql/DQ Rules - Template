@@ -1,0 +1,607 @@
+-- DQ Template-compatible rule definitions for PER_CONTACT_RELATIONSHIPS
+-- NOTE: DQ_TEMPLATE builds WHERE as: "WHERE <FIELD_NAME><V_WHERE>"
+--       So each V_WHERE below starts with the predicate for FIELD_NAME.
+--
+-- Active contact definition used below (per current requirement):
+--   DATE_END IS NULL AND DATE_START <= SYSDATE
+-- Active worker filter used below:
+--   EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--           WHERE PS.PERSON_ID = PERSON_ID
+--             AND PS.CATEGORY = 'ACTIVE_WORKERS')
+--
+-- If you want ALL rules scoped to active contacts/workers, add those predicates
+-- to rules that do not already include them. For PERSON_ID-null rules, the
+-- active worker filter will exclude all rows, so keep those unscoped.
+
+-------------------------------------------------------------------------------
+-- PERSON_ID
+
+-- RULE: PERSON_ID is null
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   IS NULL
+
+-- RULE: PERSON_ID < 0
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   < 0
+
+-- RULE: PERSON_ID = 0
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 0
+
+-- RULE: Excessive contacts per person (> 10) for active contacts
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID
+--     HAVING COUNT(*) > 10
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- CONTACT_PERSON_ID
+
+-- RULE: CONTACT_PERSON_ID is null
+-- FIELD_NAME: CONTACT_PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   IS NULL
+
+-- RULE: CONTACT_PERSON_ID < 0
+-- FIELD_NAME: CONTACT_PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   < 0
+
+-- RULE: CONTACT_PERSON_ID = 0
+-- FIELD_NAME: CONTACT_PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 0
+
+-- RULE: Self-referential relationship (PERSON_ID = CONTACT_PERSON_ID)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = CONTACT_PERSON_ID
+--   AND PERSON_ID IS NOT NULL
+
+-- RULE: Contact person linked to many employees (> 1) for active contacts
+-- FIELD_NAME: CONTACT_PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY CONTACT_PERSON_ID
+--     HAVING COUNT(DISTINCT PERSON_ID) > 1
+--   ) OFF
+--     ON OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Bidirectional relationships (A->B and B->A) for active contacts
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS B_PERSON_ID,
+--            CONTACT_PERSON_ID AS B_CONTACT_PERSON_ID,
+--            CONTACT_RELATIONSHIP_ID AS B_REL_ID,
+--            DATE_START AS B_DATE_START,
+--            DATE_END AS B_DATE_END
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--   ) PCR2
+--     ON PCR2.B_PERSON_ID = CONTACT_PERSON_ID
+--    AND PCR2.B_CONTACT_PERSON_ID = PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND CONTACT_RELATIONSHIP_ID < PCR2.B_REL_ID
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND (PCR2.B_DATE_END IS NULL AND PCR2.B_DATE_START <= SYSDATE)
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Same contact_person with multiple types for same employee (active)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID,
+--            CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID, CONTACT_PERSON_ID
+--     HAVING COUNT(DISTINCT CONTACT_TYPE) > 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+--    AND OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- DATE_START
+
+-- RULE: DATE_START is null
+-- FIELD_NAME: DATE_START
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   IS NULL
+
+-- RULE: DATE_START in the future
+-- FIELD_NAME: DATE_START
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   > SYSDATE
+
+-------------------------------------------------------------------------------
+-- DATE_END
+
+-- RULE: DATE_END < DATE_START (both populated)
+-- FIELD_NAME: DATE_END
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   < DATE_START
+--   AND DATE_START IS NOT NULL
+
+-- RULE: DATE_END = DATE_START (both populated)
+-- FIELD_NAME: DATE_END
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = DATE_START
+--   AND DATE_END IS NOT NULL
+
+-- RULE: Short duration (1-7 days) when DATE_END is populated
+-- FIELD_NAME: DATE_END
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_START IS NOT NULL
+--   AND (DATE_END - DATE_START) BETWEEN 1 AND 7
+
+-- RULE: DATE_END populated for otherwise-active contact (per requirement)
+-- FIELD_NAME: DATE_END
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- PRIMARY_CONTACT_FLAG
+
+-- RULE: PRIMARY_CONTACT_FLAG is null (active contacts)
+-- FIELD_NAME: PRIMARY_CONTACT_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   IS NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: PRIMARY_CONTACT_FLAG invalid value (active contacts)
+-- FIELD_NAME: PRIMARY_CONTACT_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Multiple active primary contacts per person
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE PRIMARY_CONTACT_FLAG = 'Y'
+--       AND DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID
+--     HAVING COUNT(*) > 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND PRIMARY_CONTACT_FLAG = 'Y'
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Persons with no primary contact (active contacts)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID
+--     HAVING SUM(CASE WHEN PRIMARY_CONTACT_FLAG = 'Y' THEN 1 ELSE 0 END) = 0
+--        AND COUNT(*) >= 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- PERSONAL_FLAG
+
+-- RULE: PERSONAL_FLAG invalid value (active contacts)
+-- FIELD_NAME: PERSONAL_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: RLTD_PER_RSDS_W_DSGNTR_FLAG = 'Y' AND PERSONAL_FLAG = 'N' (active)
+-- FIELD_NAME: RLTD_PER_RSDS_W_DSGNTR_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 'Y'
+--   AND PERSONAL_FLAG = 'N'
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- DEPENDENT_FLAG
+
+-- RULE: DEPENDENT_FLAG invalid value (active contacts)
+-- FIELD_NAME: DEPENDENT_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Multiple dependents per person (active contacts)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DEPENDENT_FLAG = 'Y'
+--       AND DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID
+--     HAVING COUNT(*) > 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DEPENDENT_FLAG = 'Y'
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- BENEFICIARY_FLAG
+
+-- RULE: BENEFICIARY_FLAG invalid value (active contacts)
+-- FIELD_NAME: BENEFICIARY_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Dependent without beneficiary (BENEFICIARY_FLAG is null)
+-- FIELD_NAME: DEPENDENT_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 'Y'
+--   AND BENEFICIARY_FLAG IS NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Dependent without beneficiary (BENEFICIARY_FLAG = 'N')
+-- FIELD_NAME: DEPENDENT_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 'Y'
+--   AND BENEFICIARY_FLAG = 'N'
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Beneficiary but not dependent
+-- FIELD_NAME: BENEFICIARY_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 'Y'
+--   AND DEPENDENT_FLAG = 'N'
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- THIRD_PARTY_PAY_FLAG
+
+-- RULE: THIRD_PARTY_PAY_FLAG invalid value (active contacts)
+-- FIELD_NAME: THIRD_PARTY_PAY_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- BONDHOLDER_FLAG
+
+-- RULE: BONDHOLDER_FLAG invalid value (active contacts)
+-- FIELD_NAME: BONDHOLDER_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- RLTD_PER_RSDS_W_DSGNTR_FLAG
+
+-- RULE: RLTD_PER_RSDS_W_DSGNTR_FLAG invalid value (active contacts)
+-- FIELD_NAME: RLTD_PER_RSDS_W_DSGNTR_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   NOT IN ('Y','N')
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- DUPLICATES AND OVERLAPS
+
+-- RULE: Exact duplicates (same PERSON_ID, CONTACT_PERSON_ID, CONTACT_TYPE, DATE_START)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID,
+--            CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID,
+--            CONTACT_TYPE AS OFF_CONTACT_TYPE,
+--            DATE_START AS OFF_DATE_START
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID, CONTACT_PERSON_ID, CONTACT_TYPE, DATE_START
+--     HAVING COUNT(*) > 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+--    AND OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+--    AND OFF.OFF_CONTACT_TYPE = CONTACT_TYPE
+--    AND OFF.OFF_DATE_START = DATE_START
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Overlapping date ranges for same relationship (any records)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS O_PERSON_ID,
+--            CONTACT_PERSON_ID AS O_CONTACT_PERSON_ID,
+--            CONTACT_RELATIONSHIP_ID AS O_REL_ID,
+--            DATE_START AS O_DATE_START,
+--            DATE_END AS O_DATE_END
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--   ) PCR2
+--     ON PCR2.O_PERSON_ID = PERSON_ID
+--    AND PCR2.O_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+--    AND CONTACT_RELATIONSHIP_ID < PCR2.O_REL_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_START <= NVL(PCR2.O_DATE_END, DATE '4712-12-31')
+--   AND NVL(DATE_END, DATE '4712-12-31') >= PCR2.O_DATE_START
+
+-------------------------------------------------------------------------------
+-- MULTIPLE CONTACTS OF SAME TYPE
+
+-- RULE: Multiple active contacts of same type per person
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID,
+--            CONTACT_TYPE AS OFF_CONTACT_TYPE
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID, CONTACT_TYPE
+--     HAVING COUNT(*) > 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+--    AND OFF.OFF_CONTACT_TYPE = CONTACT_TYPE
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- FLAG COMBINATIONS
+
+-- RULE: All flags set to Y (active contacts)
+-- FIELD_NAME: PRIMARY_CONTACT_FLAG
+-- V_JOIN:
+--   (none)
+-- V_WHERE:
+--   = 'Y'
+--   AND DEPENDENT_FLAG = 'Y'
+--   AND BENEFICIARY_FLAG = 'Y'
+--   AND THIRD_PARTY_PAY_FLAG = 'Y'
+--   AND BONDHOLDER_FLAG = 'Y'
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-- RULE: Conflicting contact types for same person/contact (active contacts)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID,
+--            CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID,
+--            CASE
+--              WHEN MAX(CASE WHEN CONTACT_TYPE IN ('S','DP') THEN 1 ELSE 0 END) = 1
+--               AND MAX(CASE WHEN CONTACT_TYPE IN ('C','A','SC','O') THEN 1 ELSE 0 END) = 1
+--               THEN 1
+--              WHEN MAX(CASE WHEN CONTACT_TYPE IN ('S','DP') THEN 1 ELSE 0 END) = 1
+--               AND MAX(CASE WHEN CONTACT_TYPE IN ('P') THEN 1 ELSE 0 END) = 1
+--               THEN 1
+--              WHEN MAX(CASE WHEN CONTACT_TYPE IN ('S','DP') THEN 1 ELSE 0 END) = 1
+--               AND MAX(CASE WHEN CONTACT_TYPE IN ('T') THEN 1 ELSE 0 END) = 1
+--               THEN 1
+--              WHEN MAX(CASE WHEN CONTACT_TYPE IN ('P') THEN 1 ELSE 0 END) = 1
+--               AND MAX(CASE WHEN CONTACT_TYPE IN ('C','A','SC','O') THEN 1 ELSE 0 END) = 1
+--               THEN 1
+--              WHEN MAX(CASE WHEN CONTACT_TYPE IN ('P') THEN 1 ELSE 0 END) = 1
+--               AND MAX(CASE WHEN CONTACT_TYPE IN ('T') THEN 1 ELSE 0 END) = 1
+--               THEN 1
+--              ELSE 0
+--            END AS CONFLICT_YN
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID, CONTACT_PERSON_ID
+--     HAVING
+--       (MAX(CASE WHEN CONTACT_TYPE IN ('S','DP') THEN 1 ELSE 0 END)
+--      + MAX(CASE WHEN CONTACT_TYPE IN ('C','A','SC','O') THEN 1 ELSE 0 END)
+--      + MAX(CASE WHEN CONTACT_TYPE IN ('P') THEN 1 ELSE 0 END)
+--      + MAX(CASE WHEN CONTACT_TYPE IN ('T') THEN 1 ELSE 0 END)) > 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+--    AND OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+--    AND OFF.CONFLICT_YN = 1
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+
+-------------------------------------------------------------------------------
+-- EMERGENCY CONTACTS ONLY
+
+-- RULE: Persons with only emergency contacts (active contacts)
+-- FIELD_NAME: PERSON_ID
+-- V_JOIN:
+--   JOIN (
+--     SELECT PERSON_ID AS OFF_PERSON_ID
+--     FROM APPS.PER_CONTACT_RELATIONSHIPS
+--     WHERE DATE_END IS NULL
+--       AND DATE_START <= SYSDATE
+--     GROUP BY PERSON_ID
+--     HAVING SUM(CASE WHEN UPPER(CONTACT_TYPE) IN ('EMRG') THEN 1 ELSE 0 END) = COUNT(*)
+--        AND COUNT(*) >= 1
+--   ) OFF
+--     ON OFF.OFF_PERSON_ID = PERSON_ID
+-- V_WHERE:
+--   IS NOT NULL
+--   AND DATE_END IS NULL
+--   AND DATE_START <= SYSDATE
+--   AND EXISTS (SELECT 1 FROM DQ_PEOPLE_STATUS_V PS
+--               WHERE PS.PERSON_ID = PERSON_ID
+--                 AND PS.CATEGORY = 'ACTIVE_WORKERS')
+

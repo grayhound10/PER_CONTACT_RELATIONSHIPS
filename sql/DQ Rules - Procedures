@@ -1,0 +1,4919 @@
+-- DQ Rules Procedures for PER_CONTACT_RELATIONSHIPS
+-- Generated from DQ_TEMPLATE with rule-specific FIELD_NAME, V_JOIN, V_WHERE applied.
+-- Each procedure hardcodes its rule logic rather than reading from DQ_CONTROL.
+-- DQ_GETRUNDATA is still called for base parameters (table names, etc.).
+-- Rule names: DQ_ prefix, max 20 characters.
+-------------------------------------------------------------------------------
+-- PERSON_ID
+
+create or replace PROCEDURE DQ_PID_NULL
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PERSON_ID_IS_NULL
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_NULL';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ IS NULL ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_LT0
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PERSON_ID_LT_0
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_LT0';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ < 0 ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_EQ0
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PERSON_ID_EQ_0
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_EQ0';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = 0 ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_EXCESS10
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- EXCESSIVE_CONTACTS_PER_PERSON_GT_10 (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_EXCESS10';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID
+     HAVING COUNT(*) > 10
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_MULTI_PRIM
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- MULTIPLE_ACTIVE_PRIMARY_CONTACTS_PER_PERSON (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_MULTI_PRIM';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE PRIMARY_CONTACT_FLAG = ''Y''
+       AND DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID
+     HAVING COUNT(*) > 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND PRIMARY_CONTACT_FLAG = ''Y''
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_NO_PRIM
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PERSONS_WITH_NO_PRIMARY_CONTACT (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_NO_PRIM';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID
+     HAVING SUM(CASE WHEN PRIMARY_CONTACT_FLAG = ''Y'' THEN 1 ELSE 0 END) = 0
+        AND COUNT(*) >= 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DUP_EXACT
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- EXACT_DUPLICATES (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DUP_EXACT';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID,
+            CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID,
+            CONTACT_TYPE AS OFF_CONTACT_TYPE,
+            DATE_START AS OFF_DATE_START
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID, CONTACT_PERSON_ID, CONTACT_TYPE, DATE_START
+     HAVING COUNT(*) > 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID
+    AND OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+    AND OFF.OFF_CONTACT_TYPE = CONTACT_TYPE
+    AND OFF.OFF_DATE_START = DATE_START ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_OVERLAP_DATE
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- OVERLAPPING_DATE_RANGES_SAME_RELATIONSHIP (unscoped)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_OVERLAP_DATE';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS O_PERSON_ID,
+            CONTACT_PERSON_ID AS O_CONTACT_PERSON_ID,
+            CONTACT_RELATIONSHIP_ID AS O_REL_ID,
+            DATE_START AS O_DATE_START,
+            DATE_END AS O_DATE_END
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+   ) PCR2
+     ON PCR2.O_PERSON_ID = PERSON_ID
+    AND PCR2.O_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+    AND CONTACT_RELATIONSHIP_ID < PCR2.O_REL_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_START <= NVL(PCR2.O_DATE_END, DATE ''4712-12-31'')
+    AND NVL(DATE_END, DATE ''4712-12-31'') >= PCR2.O_DATE_START ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_MULTITYPE
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- MULTIPLE_ACTIVE_CONTACTS_OF_SAME_TYPE (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_MULTITYPE';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID,
+            CONTACT_TYPE AS OFF_CONTACT_TYPE
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID, CONTACT_TYPE
+     HAVING COUNT(*) > 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID
+    AND OFF.OFF_CONTACT_TYPE = CONTACT_TYPE ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_TYPE_CONFLICT
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- CONFLICTING_CONTACT_TYPES (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_TYPE_CONFLICT';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID,
+            CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID,
+            CASE
+              WHEN MAX(CASE WHEN CONTACT_TYPE IN (''S'',''DP'') THEN 1 ELSE 0 END) = 1
+               AND MAX(CASE WHEN CONTACT_TYPE IN (''C'',''A'',''SC'',''O'') THEN 1 ELSE 0 END) = 1
+               THEN 1
+              WHEN MAX(CASE WHEN CONTACT_TYPE IN (''S'',''DP'') THEN 1 ELSE 0 END) = 1
+               AND MAX(CASE WHEN CONTACT_TYPE IN (''P'') THEN 1 ELSE 0 END) = 1
+               THEN 1
+              WHEN MAX(CASE WHEN CONTACT_TYPE IN (''S'',''DP'') THEN 1 ELSE 0 END) = 1
+               AND MAX(CASE WHEN CONTACT_TYPE IN (''T'') THEN 1 ELSE 0 END) = 1
+               THEN 1
+              WHEN MAX(CASE WHEN CONTACT_TYPE IN (''P'') THEN 1 ELSE 0 END) = 1
+               AND MAX(CASE WHEN CONTACT_TYPE IN (''C'',''A'',''SC'',''O'') THEN 1 ELSE 0 END) = 1
+               THEN 1
+              WHEN MAX(CASE WHEN CONTACT_TYPE IN (''P'') THEN 1 ELSE 0 END) = 1
+               AND MAX(CASE WHEN CONTACT_TYPE IN (''T'') THEN 1 ELSE 0 END) = 1
+               THEN 1
+              ELSE 0
+            END AS CONFLICT_YN
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID, CONTACT_PERSON_ID
+     HAVING
+       (MAX(CASE WHEN CONTACT_TYPE IN (''S'',''DP'') THEN 1 ELSE 0 END)
+      + MAX(CASE WHEN CONTACT_TYPE IN (''C'',''A'',''SC'',''O'') THEN 1 ELSE 0 END)
+      + MAX(CASE WHEN CONTACT_TYPE IN (''P'') THEN 1 ELSE 0 END)
+      + MAX(CASE WHEN CONTACT_TYPE IN (''T'') THEN 1 ELSE 0 END)) > 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID
+    AND OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID
+    AND OFF.CONFLICT_YN = 1 ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PID_ONLY_EMRG
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PERSONS_WITH_ONLY_EMERGENCY_CONTACTS (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PID_ONLY_EMRG';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID
+     HAVING SUM(CASE WHEN UPPER(CONTACT_TYPE) IN (''EMRG'') THEN 1 ELSE 0 END) = COUNT(*)
+        AND COUNT(*) >= 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- CONTACT_PERSON_ID
+
+create or replace PROCEDURE DQ_CPID_NULL
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- CONTACT_PERSON_ID_IS_NULL
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_CPID_NULL';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'CONTACT_PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ IS NULL ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_CPID_LT0
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- CONTACT_PERSON_ID_LT_0
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_CPID_LT0';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'CONTACT_PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ < 0 ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_CPID_EQ0
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- CONTACT_PERSON_ID_EQ_0
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_CPID_EQ0';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'CONTACT_PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = 0 ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_SELF_REF
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- SELF_REFERENTIAL_RELATIONSHIP (PERSON_ID = CONTACT_PERSON_ID)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_SELF_REF';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = CONTACT_PERSON_ID
+    AND PERSON_ID IS NOT NULL ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_CPID_MULTIEMP
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- CONTACT_PERSON_LINKED_TO_MANY_EMPLOYEES (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_CPID_MULTIEMP';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'CONTACT_PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY CONTACT_PERSON_ID
+     HAVING COUNT(DISTINCT PERSON_ID) > 1
+   ) OFF
+     ON OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_BIDIR_REL
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- BIDIRECTIONAL_RELATIONSHIPS (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_BIDIR_REL';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS B_PERSON_ID,
+            CONTACT_PERSON_ID AS B_CONTACT_PERSON_ID,
+            CONTACT_RELATIONSHIP_ID AS B_REL_ID,
+            DATE_START AS B_DATE_START,
+            DATE_END AS B_DATE_END
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+   ) PCR2
+     ON PCR2.B_PERSON_ID = CONTACT_PERSON_ID
+    AND PCR2.B_CONTACT_PERSON_ID = PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND CONTACT_RELATIONSHIP_ID < PCR2.B_REL_ID
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND (PCR2.B_DATE_END IS NULL AND PCR2.B_DATE_START <= SYSDATE)
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_CPID_MULTTYPE
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- SAME_CONTACT_MULTIPLE_TYPES (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_CPID_MULTTYPE';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID,
+            CONTACT_PERSON_ID AS OFF_CONTACT_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID, CONTACT_PERSON_ID
+     HAVING COUNT(DISTINCT CONTACT_TYPE) > 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID
+    AND OFF.OFF_CONTACT_PERSON_ID = CONTACT_PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- DATE_START
+
+create or replace PROCEDURE DQ_DS_NULL
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DATE_START_IS_NULL (unscoped)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DS_NULL';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DATE_START';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ IS NULL ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DS_FUTURE
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DATE_START_IN_FUTURE (unscoped)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DS_FUTURE';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DATE_START';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ > SYSDATE ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- DATE_END
+
+create or replace PROCEDURE DQ_DE_BEFORE_DS
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DATE_END_BEFORE_DATE_START (unscoped)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DE_BEFORE_DS';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DATE_END';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ < DATE_START
+    AND DATE_START IS NOT NULL ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DE_EQ_DS
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DATE_END_EQUALS_DATE_START (unscoped)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DE_EQ_DS';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DATE_END';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = DATE_START
+    AND DATE_END IS NOT NULL ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DE_SHORT_1_7
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- SHORT_DURATION_1_TO_7_DAYS (unscoped)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DE_SHORT_1_7';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DATE_END';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_START IS NOT NULL
+    AND (DATE_END - DATE_START) BETWEEN 1 AND 7 ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DE_POP_ACTIVE
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DATE_END_POPULATED_FOR_ACTIVE_WORKER (active workers, contradicts active contact rule)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DE_POP_ACTIVE';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DATE_END';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- PRIMARY_CONTACT_FLAG
+
+create or replace PROCEDURE DQ_PCF_NULL
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PRIMARY_CONTACT_FLAG_IS_NULL (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PCF_NULL';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PRIMARY_CONTACT_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ IS NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_PCF_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PRIMARY_CONTACT_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PCF_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PRIMARY_CONTACT_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- PERSONAL_FLAG
+
+create or replace PROCEDURE DQ_PERSF_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- PERSONAL_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_PERSF_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSONAL_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_RLTDY_PERSN
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- RLTD_PER_RSDS_W_DSGNTR_FLAG_Y_AND_PERSONAL_FLAG_N (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_RLTDY_PERSN';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'RLTD_PER_RSDS_W_DSGNTR_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = ''Y''
+    AND PERSONAL_FLAG = ''N''
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- DEPENDENT_FLAG
+
+create or replace PROCEDURE DQ_DEP_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DEPENDENT_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DEP_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DEPENDENT_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DEP_MULTI
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- MULTIPLE_DEPENDENTS_PER_PERSON (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DEP_MULTI';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PERSON_ID';
+    v_JOIN  := q'[ JOIN (
+     SELECT PERSON_ID AS OFF_PERSON_ID
+     FROM APPS.PER_CONTACT_RELATIONSHIPS
+     WHERE DEPENDENT_FLAG = ''Y''
+       AND DATE_END IS NULL
+       AND DATE_START <= SYSDATE
+     GROUP BY PERSON_ID
+     HAVING COUNT(*) > 1
+   ) OFF
+     ON OFF.OFF_PERSON_ID = PERSON_ID ]';
+    v_WHERE := q'[ IS NOT NULL
+    AND DEPENDENT_FLAG = ''Y''
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- BENEFICIARY_FLAG
+
+create or replace PROCEDURE DQ_BEN_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- BENEFICIARY_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_BEN_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'BENEFICIARY_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DEP_NO_BEN_NL
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DEPENDENT_WITHOUT_BENEFICIARY_NULL (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DEP_NO_BEN_NL';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DEPENDENT_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = ''Y''
+    AND BENEFICIARY_FLAG IS NULL
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_DEP_NO_BEN_N
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- DEPENDENT_WITHOUT_BENEFICIARY_N (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_DEP_NO_BEN_N';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'DEPENDENT_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = ''Y''
+    AND BENEFICIARY_FLAG = ''N''
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+create or replace PROCEDURE DQ_BEN_NOT_DEP
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- BENEFICIARY_BUT_NOT_DEPENDENT (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_BEN_NOT_DEP';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'BENEFICIARY_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = ''Y''
+    AND DEPENDENT_FLAG = ''N''
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- THIRD_PARTY_PAY_FLAG
+
+create or replace PROCEDURE DQ_TPP_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- THIRD_PARTY_PAY_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_TPP_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'THIRD_PARTY_PAY_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- BONDHOLDER_FLAG
+
+create or replace PROCEDURE DQ_BH_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- BONDHOLDER_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_BH_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'BONDHOLDER_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- RLTD_PER_RSDS_W_DSGNTR_FLAG
+
+create or replace PROCEDURE DQ_RLTD_INVALID
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- RLTD_PER_RSDS_W_DSGNTR_FLAG_INVALID (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_RLTD_INVALID';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'RLTD_PER_RSDS_W_DSGNTR_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ NOT IN (''Y'',''N'')
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
+-------------------------------------------------------------------------------
+-- FLAG COMBINATIONS
+
+create or replace PROCEDURE DQ_ALL_FLAGS_Y
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- ALL_FLAGS_SET_TO_Y (active contacts + active workers)
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_ALL_FLAGS_Y';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ
+                    ,v_MASTER_CTRL_SEQ
+                    ,v_DQRULE_SEQ
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME
+                    ,v_SOURCE_TABLE_NAME
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN
+                    ,v_where
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    -- Apply rule-specific logic
+    --
+    v_FIELD_NAME := 'PRIMARY_CONTACT_FLAG';
+    v_JOIN  := q'[]';
+    v_WHERE := q'[ = ''Y''
+    AND DEPENDENT_FLAG = ''Y''
+    AND BENEFICIARY_FLAG = ''Y''
+    AND THIRD_PARTY_PAY_FLAG = ''Y''
+    AND BONDHOLDER_FLAG = ''Y''
+    AND DATE_END IS NULL
+    AND DATE_START <= SYSDATE
+    AND EXISTS (
+          SELECT 1
+          FROM DQ_PEOPLE_STATUS_V PS
+          WHERE PS.PERSON_ID = PERSON_ID
+            AND PS.CATEGORY = ''ACTIVE_WORKERS''
+        ) ]';
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+
+    commit;
+    --
+    DQ_COMPOUND_UPDATE
+    (p_CTRL_SEQ
+    ,v_MASTER_CTRL_SEQ
+    ,v_DQRULE_SEQ
+    ,v_NEW_TABLE_NAME
+    ,v_FIELD_NAME
+    ,v_COMPOUND_CLEANSE
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+END;
+/
