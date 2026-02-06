@@ -1,0 +1,126 @@
+create or replace PROCEDURE DQ_TEMPLATE
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_TEMPLATE';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_IN_LIST               VARCHAR2(4000);
+v_sql                   VARCHAR2(4000);
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+v_USE_DATA          DQ_CONTROL.USE_DATA%TYPE;
+--
+-- Declare Local variables
+--
+BEGIN
+    --
+    -- USE p_CTRL_SEQ  to mark ROW to be processed
+    --
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ        
+                    ,v_MASTER_CTRL_SEQ 
+                    ,v_DQRULE_SEQ  
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME   
+                    ,v_SOURCE_TABLE_NAME 
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN             
+                    ,v_where              
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+------------------------------ENTER RULE SPECIFIC CODE IN FORMAT BELOW---------------------------------------------------                    
+    --
+    -- The below v_IN_LIST is required because the in_List was a late addition and for it to be
+    -- added to the DQ_GETRUNDATA above would have forced a recompile of all the Procedures
+    -- as it stands the in_list exists on DQ_CONTROL and can be read in addition  to DQ_GETRUNDATA.
+    -- The late addition is still saved to DQ_CONTROL table which still acts as a digital RUNBOOK
+    --
+    select in_list
+    ,      use_data
+    into   v_IN_LIST
+    ,      v_use_data
+    from   DQ_CONTROL
+    where  CTRL_SEQ = p_CTRL_SEQ;
+    --
+    v_sql := q'[insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select ]'||p_CTRL_SEQ||
+              q'[, ]'   ||v_MASTER_CTRL_SEQ||
+              q'[, ]'   ||v_DQRULE_SEQ||
+              q'[, TABROWID ]'||
+              q'[, ']'||v_ProcedureName||q'[' ]'||
+              q'[, ']'||v_TABLE_NAME||q'[' ]'||
+              q'[, ']'||v_FIELD_NAME||q'[' ]'||
+              q'[,  ]'||v_FIELD_NAME||
+              q'[,  ]'||v_FIELD_NAME||-- ', '||<<enter cleanse value here>> as a replacement for this line||
+              q'[ from ]'||v_NEW_TABLE_NAME||v_JOIN||
+              q'[ where ]' || v_field_name ||v_WHERE;
+                  
+    
+    v_sql := replace(v_sql,'xx','''');
+    execute immediate v_sql;
+    
+    commit;
+------------------------------ENTER RULE SPECIFIC CODE IN FORMAT ABOVE---------------------------------------------------                    
+    --
+    -- Update the Main DQ table to reflect the change just made
+    -- ie. USE DQ_CLEANSE_RESULTS as the control for this
+    --
+    DQ_COMPOUND_UPDATE 
+    (p_CTRL_SEQ            
+    ,v_MASTER_CTRL_SEQ    
+    ,v_DQRULE_SEQ        
+    ,v_NEW_TABLE_NAME     
+    ,v_FIELD_NAME         
+    ,v_COMPOUND_CLEANSE   
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+        --
+        UPDATE DQ_CONTROL 
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  =   sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+
+    --    RAISE;
+END;
