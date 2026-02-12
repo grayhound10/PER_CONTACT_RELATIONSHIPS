@@ -1,0 +1,149 @@
+create or replace PROCEDURE DQ_NO_PRIMARY_CONTACT_V
+(p_CTRL_SEQ   INT
+ )
+AS
+--
+-- Declare BASE variables
+--
+v_ProcedureName     VARCHAR2(250) default 'DQ_NO_PRIMARY_CONTACT_V';
+v_TABLE_NAME            VARCHAR2(250);
+v_NEW_TABLE_NAME        VARCHAR2(250);
+v_SOURCE_TABLE_NAME     VARCHAR2(250);
+v_MASTER_CTRL_SEQ       INT;
+v_DQRULE_SEQ            INT;
+v_FIELD_NAME            VARCHAR2(250);
+v_SCHEMA_NAME           VARCHAR2(250);
+v_JOIN                  VARCHAR2(4000);
+v_WHERE                 VARCHAR2(4000);
+v_MIGRATION_TERM_MTHS   INT;
+v_err_msg               VARCHAR2(4000);
+v_sql                  CLOB;
+v_COMPOUND_CLEANSE  VARCHAR2(1);
+v_BATCH_SEQ         DQ_CONTROL.BATCH_SEQ%TYPE;
+v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
+
+--
+-- Declare Local variables Here
+--
+V_ROWCOUNT              NUMBER := 0;
+--
+BEGIN
+    --
+    -- GET WORKING VARIABLES
+    --
+    DQ_GETRUNDATA   (p_CTRL_SEQ        
+                    ,v_MASTER_CTRL_SEQ 
+                    ,v_DQRULE_SEQ  
+                    ,v_TABLE_NAME
+                    ,v_NEW_TABLE_NAME   
+                    ,v_SOURCE_TABLE_NAME 
+                    ,v_FIELD_NAME
+                    ,v_SCHEMA_NAME
+                    ,v_JOIN             
+                    ,v_where              
+                    ,v_MIGRATION_TERM_MTHS
+                    ,v_COMPOUND_CLEANSE
+                    ,v_BATCH_SEQ
+                    ,v_DOMAIN_NAME
+                    );
+
+
+
+------------------------------ENTER RULE SPECIFIC CODE IN FORMAT BELOW---------------------------------------------------                    
+begin
+    
+        
+        v_sql:= q'[CREATE OR REPLACE VIEW DQ_ACTIVE_CONTACTS_SAME_TYPE_V AS 
+        SELECT 
+            PCR.PERSON_ID,
+            PAPF.EMPLOYEE_NUMBER,
+            PCR.CONTACT_PERSON_ID,
+            PCR.CONTACT_TYPE,
+            LKUP.MEANING,
+            PCR.DATE_START,
+            PCR.DATE_END,
+            PCR.PRIMARY_CONTACT_FLAG,
+            PCR.PERSONAL_FLAG,
+            PCR.DEPENDENT_FLAG,
+            PCR.RLTD_PER_RSDS_W_DSGNTR_FLAG,
+            THIRD_PARTY_PAY_FLAG,
+            BONDHOLDER_FLAG,
+            BENEFICIARY_FLAG
+        FROM DQ_PER_CONTACT_RELATIONSHIPS_V PCR
+        LEFT JOIN APPS.PER_ALL_PEOPLE_F PAPF ON PAPF.PERSON_ID = PCR.PERSON_ID AND TRUNC(SYSDATE) BETWEEN PAPF.EFFECTIVE_START_DATE AND PAPF.EFFECTIVE_END_DATE
+        LEFT JOIN APPS.FND_LOOKUP_VALUES LKUP ON LKUP.LOOKUP_CODE = PCR.CONTACT_TYPE 
+                                              AND LKUP.LOOKUP_TYPE = 'CONTACT'
+                                              AND LKUP.ZD_EDITION_NAME = 'SET1'
+        WHERE 
+            EXISTS (SELECT 1 FROM DQ_CLEANSE_RESULTS DCR 
+                    WHERE DCR.START_VALUE = PCR.PERSON_ID
+                    AND DCR.PROCEDURE_NAME = 'DQ_NO_VALUE'
+                    AND BATCH_SEQ = (SELECT MAX(BATCH_SEQ) FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME ='HR')
+                    )
+        ORDER BY PERSON_ID,CONTACT_TYPE]';
+    
+    
+    DBMS_OUTPUT.PUT_LINE(V_SQL);
+    EXECUTE IMMEDIATE V_SQL; 
+   
+    
+    --
+    -- Get row count 
+    --
+    SELECT COUNT(*) INTO V_ROWCOUNT FROM DQ_ACTIVE_CONTACTS_SAME_TYPE_V;
+    DBMS_OUTPUT.PUT_LINE('DQ_ACTIVE_CONTACTS_SAME_TYPE_V row count: ' || V_ROWCOUNT);
+
+
+    --
+    -- Update DQ_CONTROL with row count and pass percent
+    --
+    UPDATE DQ_CONTROL
+    SET    ROWCOUNT     = V_ROWCOUNT
+    ,      PASSPERCENT  = CASE
+                              WHEN NVL(V_ROWCOUNT,0) = 0 THEN 100
+                              ELSE 0
+                          END
+    WHERE  CTRL_SEQ     = p_CTRL_SEQ;
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('DQ_CONTROL updated for CTRL_SEQ: ' || p_CTRL_SEQ);
+
+
+END;
+
+------------------------------ENTER RULE SPECIFIC CODE IN FORMAT ABOVE---------------------------------------------------                    
+    --
+    -- Update the Main DQ table to reflect the change just made
+    -- ie. USE DQ_CLEANSE_RESULTS as the control for this
+    --
+    DQ_COMPOUND_UPDATE 
+    (p_CTRL_SEQ            
+    ,v_MASTER_CTRL_SEQ    
+    ,v_DQRULE_SEQ        
+    ,v_NEW_TABLE_NAME     
+    ,v_FIELD_NAME         
+    ,v_COMPOUND_CLEANSE   
+    );
+
+    commit;
+    --
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_msg := SQLERRM;
+        DQ_INSERTEXCEPTION
+        (p_CTRL_SEQ
+        ,v_MASTER_CTRL_SEQ
+        ,v_DQRULE_SEQ
+        ,v_ProcedureName
+        ,v_err_msg
+        );
+
+        UPDATE DQ_CONTROL 
+        set    PROCEDURE_STATUS = 'FAILED'
+        ,      PROCEDURE_END  = sysdate
+        WHERE  CTRL_SEQ = p_CTRL_SEQ;
+        --
+        commit;
+
+
+END;
