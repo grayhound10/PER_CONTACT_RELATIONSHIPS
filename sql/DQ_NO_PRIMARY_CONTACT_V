@@ -60,10 +60,18 @@ begin
         DBMS_OUTPUT.PUT_LINE('Table name: ' || v_DQ_TABLE_NAME);
 
         --
-        -- Create blank table from the query structure (no rows)
+        -- Drop table if it already exists, then create fresh
         --
         BEGIN
-            EXECUTE IMMEDIATE 'CREATE TABLE ' || v_DQ_TABLE_NAME || q'[ AS
+            EXECUTE IMMEDIATE 'DROP TABLE ' || v_DQ_TABLE_NAME || ' PURGE';
+        EXCEPTION
+            WHEN OTHERS THEN
+                IF SQLCODE != -942 THEN  -- ORA-00942: table or view does not exist
+                    RAISE;
+                END IF;
+        END;
+
+        EXECUTE IMMEDIATE 'CREATE TABLE ' || v_DQ_TABLE_NAME || q'[ AS
             SELECT
                 PCR.PERSON_ID,
                 PAPF.EMPLOYEE_NUMBER,
@@ -81,14 +89,6 @@ begin
             FROM DQ_PER_CONTACT_RELATIONSHIPS_V PCR
             LEFT JOIN APPS.PER_ALL_PEOPLE_F PAPF ON PAPF.PERSON_ID = PCR.PERSON_ID AND TRUNC(SYSDATE) BETWEEN PAPF.EFFECTIVE_START_DATE AND PAPF.EFFECTIVE_END_DATE
             WHERE 1=0]';
-        EXCEPTION
-            WHEN OTHERS THEN
-                IF SQLCODE != -955 THEN  -- ORA-00955: name already used
-                    RAISE;
-                END IF;
-        END;
-
-        EXECUTE IMMEDIATE 'TRUNCATE TABLE ' || v_DQ_TABLE_NAME;
 
         v_sql:= 'INSERT INTO ' || v_DQ_TABLE_NAME || q'[
         SELECT
