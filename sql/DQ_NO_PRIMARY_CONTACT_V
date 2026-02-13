@@ -1,11 +1,11 @@
-create or replace PROCEDURE DQ_NO_PRIMARY_CONTACT_V
+create or replace PROCEDURE DQ_NO_PRIMARY_CONTACT
 (p_CTRL_SEQ   INT
  )
 AS
 --
 -- Declare BASE variables
 --
-v_ProcedureName     VARCHAR2(250) default 'DQ_NO_PRIMARY_CONTACT_V';
+v_ProcedureName     VARCHAR2(250) default 'DQ_NO_PRIMARY_CONTACT';
 v_TABLE_NAME            VARCHAR2(250);
 v_NEW_TABLE_NAME        VARCHAR2(250);
 v_SOURCE_TABLE_NAME     VARCHAR2(250);
@@ -54,25 +54,16 @@ BEGIN
 ------------------------------ENTER RULE SPECIFIC CODE IN FORMAT BELOW---------------------------------------------------                    
 begin
 
-        --
-        -- Build dynamic table name with batch_seq
-        --
-        v_DQ_TABLE_NAME := 'DQ_ACTIVE_CONTACTS_SAME_TYPE_T_' || v_BATCH_SEQ;
+        v_DQ_TABLE_NAME := 'DQ_NO_PRIMARY_CONTACT_' || v_BATCH_SEQ;
         DBMS_OUTPUT.PUT_LINE('Table name: ' || v_DQ_TABLE_NAME);
 
-        --
-        -- Get max batch_seq once to avoid recalculating per row
-        --
         SELECT MAX(BATCH_SEQ) INTO v_MAX_BATCH_SEQ FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME = 'HR';
 
-        --
-        -- Drop table if it already exists, then create fresh
-        --
         BEGIN
             EXECUTE IMMEDIATE 'DROP TABLE ' || v_DQ_TABLE_NAME || ' PURGE';
         EXCEPTION
             WHEN OTHERS THEN
-                IF SQLCODE != -942 THEN  -- ORA-00942: table or view does not exist
+                IF SQLCODE != -942 THEN 
                     RAISE;
                 END IF;
         END;
@@ -99,31 +90,21 @@ begin
                     WHERE DCR.START_VALUE = PCR.PERSON_ID
                     AND DCR.PROCEDURE_NAME = 'DQ_NO_VALUE'
                     AND DCR.BATCH_SEQ = ]' || v_MAX_BATCH_SEQ || q'[
-                    )]';
+                    )
+        ORDER BY PCR.PERSON_ID]';
 
 
     DBMS_OUTPUT.PUT_LINE(V_SQL);
     EXECUTE IMMEDIATE V_SQL;
     COMMIT;
 
-    --
-    -- Create view on top of the table
-    --
-    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_ACTIVE_CONTACTS_SAME_TYPE_V AS
-        SELECT * FROM ' || v_DQ_TABLE_NAME;
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_NO_PRIMARY_CONTACT_V AS SELECT * FROM ' || v_DQ_TABLE_NAME;
 
-    DBMS_OUTPUT.PUT_LINE('View DQ_ACTIVE_CONTACTS_SAME_TYPE_V created on ' || v_DQ_TABLE_NAME);
+    DBMS_OUTPUT.PUT_LINE('View DQ_NO_PRIMARY_CONTACT_V created on ' || v_DQ_TABLE_NAME);
 
-    --
-    -- Get row count
-    --
     EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || v_DQ_TABLE_NAME INTO V_ROWCOUNT;
-    DBMS_OUTPUT.PUT_LINE('DQ_ACTIVE_CONTACTS_SAME_TYPE_V row count: ' || V_ROWCOUNT);
+    DBMS_OUTPUT.PUT_LINE('DQ_NO_PRIMARY_CONTACT_V row count: ' || V_ROWCOUNT);
 
-
-    --
-    -- Update DQ_CONTROL with row count and pass percent
-    --
     UPDATE DQ_CONTROL
     SET    ROWCOUNT     = V_ROWCOUNT
     ,      PASSPERCENT  = CASE
@@ -134,7 +115,6 @@ begin
     COMMIT;
 
     DBMS_OUTPUT.PUT_LINE('DQ_CONTROL updated for CTRL_SEQ: ' || p_CTRL_SEQ);
-
 
 END;
 
