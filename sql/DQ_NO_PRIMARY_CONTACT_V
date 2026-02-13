@@ -27,6 +27,7 @@ v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
 --
 V_ROWCOUNT              NUMBER := 0;
 v_DQ_TABLE_NAME         VARCHAR2(250);
+v_MAX_BATCH_SEQ         DQ_CLEANSE_RESULTS.BATCH_SEQ%TYPE;
 --
 BEGIN
     --
@@ -53,8 +54,16 @@ BEGIN
 ------------------------------ENTER RULE SPECIFIC CODE IN FORMAT BELOW---------------------------------------------------                    
 begin
 
-        v_DQ_TABLE_NAME := 'DQ_NO_PRIMARY_CONTACT_' || v_BATCH_SEQ;
+        --
+        -- Build dynamic table name with batch_seq
+        --
+        v_DQ_TABLE_NAME := 'DQ_ACTIVE_CONTACTS_SAME_TYPE_T_' || v_BATCH_SEQ;
         DBMS_OUTPUT.PUT_LINE('Table name: ' || v_DQ_TABLE_NAME);
+
+        --
+        -- Get max batch_seq once to avoid recalculating per row
+        --
+        SELECT MAX(BATCH_SEQ) INTO v_MAX_BATCH_SEQ FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME = 'HR';
 
         --
         -- Drop table if it already exists, then create fresh
@@ -68,26 +77,7 @@ begin
                 END IF;
         END;
 
-        EXECUTE IMMEDIATE 'CREATE TABLE ' || v_DQ_TABLE_NAME || q'[ AS
-            SELECT
-                PCR.PERSON_ID,
-                PAPF.EMPLOYEE_NUMBER,
-                PCR.CONTACT_PERSON_ID,
-                PCR.CONTACT_TYPE,
-                PCR.DATE_START,
-                PCR.DATE_END,
-                PCR.PRIMARY_CONTACT_FLAG,
-                PCR.PERSONAL_FLAG,
-                PCR.DEPENDENT_FLAG,
-                PCR.RLTD_PER_RSDS_W_DSGNTR_FLAG,
-                THIRD_PARTY_PAY_FLAG,
-                BONDHOLDER_FLAG,
-                BENEFICIARY_FLAG
-            FROM DQ_PER_CONTACT_RELATIONSHIPS_V PCR
-            LEFT JOIN APPS.PER_ALL_PEOPLE_F PAPF ON PAPF.PERSON_ID = PCR.PERSON_ID AND TRUNC(SYSDATE) BETWEEN PAPF.EFFECTIVE_START_DATE AND PAPF.EFFECTIVE_END_DATE
-            WHERE 1=0]';
-
-        v_sql:= 'INSERT INTO ' || v_DQ_TABLE_NAME || q'[
+        v_sql:= 'CREATE TABLE ' || v_DQ_TABLE_NAME || q'[ AS
         SELECT
             PCR.PERSON_ID,
             PAPF.EMPLOYEE_NUMBER,
@@ -108,7 +98,7 @@ begin
             EXISTS (SELECT 1 FROM DQ_CLEANSE_RESULTS DCR
                     WHERE DCR.START_VALUE = PCR.PERSON_ID
                     AND DCR.PROCEDURE_NAME = 'DQ_NO_VALUE'
-                    AND BATCH_SEQ = (SELECT MAX(BATCH_SEQ) FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME =]' || q'['HR')
+                    AND DCR.BATCH_SEQ = ]' || v_MAX_BATCH_SEQ || q'[
                     )]';
 
 
@@ -119,14 +109,16 @@ begin
     --
     -- Create view on top of the table
     --
-    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_NO_PRIMARY_CONTACT_V AS SELECT * FROM ' || v_DQ_TABLE_NAME;
-    DBMS_OUTPUT.PUT_LINE('View DQ_NO_PRIMARY_CONTACT_V created on ' || v_DQ_TABLE_NAME);
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_ACTIVE_CONTACTS_SAME_TYPE_V AS
+        SELECT * FROM ' || v_DQ_TABLE_NAME;
+
+    DBMS_OUTPUT.PUT_LINE('View DQ_ACTIVE_CONTACTS_SAME_TYPE_V created on ' || v_DQ_TABLE_NAME);
 
     --
     -- Get row count
     --
     EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || v_DQ_TABLE_NAME INTO V_ROWCOUNT;
-    DBMS_OUTPUT.PUT_LINE('DQ_NO_PRIMARY_CONTACT_V row count: ' || V_ROWCOUNT);
+    DBMS_OUTPUT.PUT_LINE('DQ_ACTIVE_CONTACTS_SAME_TYPE_V row count: ' || V_ROWCOUNT);
 
 
     --
@@ -142,6 +134,8 @@ begin
     COMMIT;
 
     DBMS_OUTPUT.PUT_LINE('DQ_CONTROL updated for CTRL_SEQ: ' || p_CTRL_SEQ);
+
+
 END;
 
 ------------------------------ENTER RULE SPECIFIC CODE IN FORMAT ABOVE---------------------------------------------------                    
