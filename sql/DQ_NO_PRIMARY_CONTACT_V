@@ -26,6 +26,7 @@ v_DOMAIN_NAME       DQ_CONTROL.DOMAIN_NAME%TYPE;
 -- Declare Local variables Here
 --
 V_ROWCOUNT              NUMBER := 0;
+v_DQ_TABLE_NAME         VARCHAR2(250);
 --
 BEGIN
     --
@@ -53,26 +54,33 @@ BEGIN
 begin
 
         --
-        -- Create table if it does not exist
+        -- Build dynamic table name with batch_seq
+        --
+        v_DQ_TABLE_NAME := 'DQ_ACTIVE_CONTACTS_SAME_TYPE_T_' || v_BATCH_SEQ;
+        DBMS_OUTPUT.PUT_LINE('Table name: ' || v_DQ_TABLE_NAME);
+
+        --
+        -- Create blank table from the query structure (no rows)
         --
         BEGIN
-            EXECUTE IMMEDIATE q'[CREATE TABLE DQ_ACTIVE_CONTACTS_SAME_TYPE_T
-            (
-                PERSON_ID                    NUMBER,
-                EMPLOYEE_NUMBER              VARCHAR2(30),
-                CONTACT_PERSON_ID            NUMBER,
-                CONTACT_TYPE                 VARCHAR2(30),
-                MEANING                      VARCHAR2(240),
-                DATE_START                   DATE,
-                DATE_END                     DATE,
-                PRIMARY_CONTACT_FLAG         VARCHAR2(1),
-                PERSONAL_FLAG                VARCHAR2(1),
-                DEPENDENT_FLAG               VARCHAR2(1),
-                RLTD_PER_RSDS_W_DSGNTR_FLAG  VARCHAR2(1),
-                THIRD_PARTY_PAY_FLAG         VARCHAR2(1),
-                BONDHOLDER_FLAG              VARCHAR2(1),
-                BENEFICIARY_FLAG             VARCHAR2(1)
-            )]';
+            EXECUTE IMMEDIATE 'CREATE TABLE ' || v_DQ_TABLE_NAME || q'[ AS
+            SELECT
+                PCR.PERSON_ID,
+                PAPF.EMPLOYEE_NUMBER,
+                PCR.CONTACT_PERSON_ID,
+                PCR.CONTACT_TYPE,
+                PCR.DATE_START,
+                PCR.DATE_END,
+                PCR.PRIMARY_CONTACT_FLAG,
+                PCR.PERSONAL_FLAG,
+                PCR.DEPENDENT_FLAG,
+                PCR.RLTD_PER_RSDS_W_DSGNTR_FLAG,
+                THIRD_PARTY_PAY_FLAG,
+                BONDHOLDER_FLAG,
+                BENEFICIARY_FLAG
+            FROM DQ_PER_CONTACT_RELATIONSHIPS_V PCR
+            LEFT JOIN APPS.PER_ALL_PEOPLE_F PAPF ON PAPF.PERSON_ID = PCR.PERSON_ID AND TRUNC(SYSDATE) BETWEEN PAPF.EFFECTIVE_START_DATE AND PAPF.EFFECTIVE_END_DATE
+            WHERE 1=0]';
         EXCEPTION
             WHEN OTHERS THEN
                 IF SQLCODE != -955 THEN  -- ORA-00955: name already used
@@ -80,18 +88,14 @@ begin
                 END IF;
         END;
 
-        EXECUTE IMMEDIATE 'TRUNCATE TABLE DQ_ACTIVE_CONTACTS_SAME_TYPE_T';
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE ' || v_DQ_TABLE_NAME;
 
-        v_sql:= q'[INSERT INTO DQ_ACTIVE_CONTACTS_SAME_TYPE_T
-            (PERSON_ID, EMPLOYEE_NUMBER, CONTACT_PERSON_ID, CONTACT_TYPE, MEANING,
-             DATE_START, DATE_END, PRIMARY_CONTACT_FLAG, PERSONAL_FLAG, DEPENDENT_FLAG,
-             RLTD_PER_RSDS_W_DSGNTR_FLAG, THIRD_PARTY_PAY_FLAG, BONDHOLDER_FLAG, BENEFICIARY_FLAG)
+        v_sql:= 'INSERT INTO ' || v_DQ_TABLE_NAME || q'[
         SELECT
             PCR.PERSON_ID,
             PAPF.EMPLOYEE_NUMBER,
             PCR.CONTACT_PERSON_ID,
             PCR.CONTACT_TYPE,
-            LKUP.MEANING,
             PCR.DATE_START,
             PCR.DATE_END,
             PCR.PRIMARY_CONTACT_FLAG,
@@ -103,14 +107,11 @@ begin
             BENEFICIARY_FLAG
         FROM DQ_PER_CONTACT_RELATIONSHIPS_V PCR
         LEFT JOIN APPS.PER_ALL_PEOPLE_F PAPF ON PAPF.PERSON_ID = PCR.PERSON_ID AND TRUNC(SYSDATE) BETWEEN PAPF.EFFECTIVE_START_DATE AND PAPF.EFFECTIVE_END_DATE
-        LEFT JOIN APPS.FND_LOOKUP_VALUES LKUP ON LKUP.LOOKUP_CODE = PCR.CONTACT_TYPE
-                                              AND LKUP.LOOKUP_TYPE = 'CONTACT'
-                                              AND LKUP.ZD_EDITION_NAME = 'SET1'
         WHERE
             EXISTS (SELECT 1 FROM DQ_CLEANSE_RESULTS DCR
                     WHERE DCR.START_VALUE = PCR.PERSON_ID
                     AND DCR.PROCEDURE_NAME = 'DQ_NO_VALUE'
-                    AND BATCH_SEQ = (SELECT MAX(BATCH_SEQ) FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME ='HR')
+                    AND BATCH_SEQ = (SELECT MAX(BATCH_SEQ) FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME =]' || q'['HR')
                     )]';
 
 
@@ -121,18 +122,15 @@ begin
     --
     -- Create view on top of the table
     --
-    EXECUTE IMMEDIATE q'[CREATE OR REPLACE VIEW DQ_ACTIVE_CONTACTS_SAME_TYPE_V AS
-        SELECT PERSON_ID, EMPLOYEE_NUMBER, CONTACT_PERSON_ID, CONTACT_TYPE, MEANING,
-               DATE_START, DATE_END, PRIMARY_CONTACT_FLAG, PERSONAL_FLAG, DEPENDENT_FLAG,
-               RLTD_PER_RSDS_W_DSGNTR_FLAG, THIRD_PARTY_PAY_FLAG, BONDHOLDER_FLAG, BENEFICIARY_FLAG
-        FROM DQ_ACTIVE_CONTACTS_SAME_TYPE_T]';
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_ACTIVE_CONTACTS_SAME_TYPE_V AS
+        SELECT * FROM ' || v_DQ_TABLE_NAME;
 
-    DBMS_OUTPUT.PUT_LINE('View DQ_ACTIVE_CONTACTS_SAME_TYPE_V created.');
+    DBMS_OUTPUT.PUT_LINE('View DQ_ACTIVE_CONTACTS_SAME_TYPE_V created on ' || v_DQ_TABLE_NAME);
 
     --
     -- Get row count
     --
-    SELECT COUNT(*) INTO V_ROWCOUNT FROM DQ_ACTIVE_CONTACTS_SAME_TYPE_V;
+    EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || v_DQ_TABLE_NAME INTO V_ROWCOUNT;
     DBMS_OUTPUT.PUT_LINE('DQ_ACTIVE_CONTACTS_SAME_TYPE_V row count: ' || V_ROWCOUNT);
 
 
