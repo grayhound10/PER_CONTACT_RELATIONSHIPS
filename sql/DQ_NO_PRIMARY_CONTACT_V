@@ -53,10 +53,7 @@ BEGIN
 ------------------------------ENTER RULE SPECIFIC CODE IN FORMAT BELOW---------------------------------------------------                    
 begin
 
-        --
-        -- Build dynamic table name with batch_seq
-        --
-        v_DQ_TABLE_NAME := 'DQ_ACTIVE_CONTACTS_SAME_TYPE_T_' || v_BATCH_SEQ;
+        v_DQ_TABLE_NAME := 'DQ_NO_PRIMARY_CONTACT_' || v_BATCH_SEQ;
         DBMS_OUTPUT.PUT_LINE('Table name: ' || v_DQ_TABLE_NAME);
 
         --
@@ -122,16 +119,14 @@ begin
     --
     -- Create view on top of the table
     --
-    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_ACTIVE_CONTACTS_SAME_TYPE_V AS
-        SELECT * FROM ' || v_DQ_TABLE_NAME;
-
-    DBMS_OUTPUT.PUT_LINE('View DQ_ACTIVE_CONTACTS_SAME_TYPE_V created on ' || v_DQ_TABLE_NAME);
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW DQ_NO_PRIMARY_CONTACT_V AS SELECT * FROM ' || v_DQ_TABLE_NAME;
+    DBMS_OUTPUT.PUT_LINE('View DQ_NO_PRIMARY_CONTACT_V created on ' || v_DQ_TABLE_NAME);
 
     --
     -- Get row count
     --
     EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || v_DQ_TABLE_NAME INTO V_ROWCOUNT;
-    DBMS_OUTPUT.PUT_LINE('DQ_ACTIVE_CONTACTS_SAME_TYPE_V row count: ' || V_ROWCOUNT);
+    DBMS_OUTPUT.PUT_LINE('DQ_NO_PRIMARY_CONTACT_V row count: ' || V_ROWCOUNT);
 
 
     --
@@ -147,8 +142,6 @@ begin
     COMMIT;
 
     DBMS_OUTPUT.PUT_LINE('DQ_CONTROL updated for CTRL_SEQ: ' || p_CTRL_SEQ);
-
-
 END;
 
 ------------------------------ENTER RULE SPECIFIC CODE IN FORMAT ABOVE---------------------------------------------------                    
