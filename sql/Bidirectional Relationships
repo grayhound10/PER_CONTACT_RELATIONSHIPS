@@ -1,5 +1,6 @@
 -- Flagged person's contact record
 SELECT
+        PCR.PERSON_ID AS FLAGGED_PERSON_ID,
         1 AS SIDE,
         PCR.PERSON_ID,
         PAPF.EMPLOYEE_NUMBER,
@@ -31,6 +32,7 @@ UNION ALL
 
 -- The contact's record back to the flagged person
 SELECT
+        PCR.PERSON_ID AS FLAGGED_PERSON_ID,
         2 AS SIDE,
         PCR2.PERSON_ID,
         PAPF2.EMPLOYEE_NUMBER,
@@ -59,4 +61,4 @@ WHERE
             AND PROCEDURE_NAME = 'DQ_EXISTS'
             AND FIELD_NAME = 'DQ_PERSON_ID'
             AND BATCH_SEQ = (SELECT MAX(BATCH_SEQ) FROM DQ_CLEANSE_RESULTS WHERE DOMAIN_NAME = 'HR'))
-ORDER BY PERSON_ID, CONTACT_PERSON_ID, SIDE;
+ORDER BY FLAGGED_PERSON_ID, SIDE;
