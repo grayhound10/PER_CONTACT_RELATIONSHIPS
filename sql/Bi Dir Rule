@@ -1,0 +1,13 @@
+insert into DQ_CLEANSE_RESULTS
+               (CTRL_SEQ
+               ,MASTER_CTRL_SEQ
+               ,DQRULE_SEQ
+               ,TABROWID
+               ,PROCEDURE_NAME
+               ,TABLE_NAME
+               ,FIELD_NAME
+               ,START_VALUE
+               ,CLEANSED_VALUE
+               )
+               select 7831, 7821, 9047, TABROWID , 'DQ_EXISTS' , 'PER_CONTACT_RELATIONSHIPS' , 'DQ_PERSON_ID' ,  DQ_PERSON_ID,  DQ_PERSON_ID from DQ_PER_CONTACT_RELATIONSHIPS_V T where exists ( SELECT 1 FROM APPS.PER_CONTACT_RELATIONSHIPS R WHERE R.PERSON_ID = T.CONTACT_PERSON_ID AND R.CONTACT_PERSON_ID = T.PERSON_ID)
+
