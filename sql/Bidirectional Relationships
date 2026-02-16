@@ -1,98 +1,37 @@
-insert into DQ_CLEANSE_RESULTS
-               (CTRL_SEQ
-               ,MASTER_CTRL_SEQ
-               ,DQRULE_SEQ
-               ,TABROWID
-               ,PROCEDURE_NAME
-               ,TABLE_NAME
-               ,FIELD_NAME
-               ,START_VALUE
-               ,CLEANSED_VALUE
-               )
-               select 7831, 7821, 9047, TABROWID , 'DQ_EXISTS' , 'PER_CONTACT_RELATIONSHIPS' , 'DQ_PERSON_ID' ,  DQ_PERSON_ID,  DQ_PERSON_ID from DQ_PER_CONTACT_RELATIONSHIPS_V T where exists ( SELECT 1 FROM APPS.PER_CONTACT_RELATIONSHIPS R WHERE R.PERSON_ID = T.CONTACT_PERSON_ID AND R.CONTACT_PERSON_ID = T.PERSON_ID)
-
-
-WITH latest_batch AS (
-    SELECT MAX(BATCH_SEQ) AS BATCH_SEQ
-    FROM DQ_CLEANSE_RESULTS
-    WHERE DOMAIN_NAME = 'HR'
+WITH latest_hr_batch AS (
+  SELECT MAX(batch_seq) AS batch_seq
+  FROM   dq_cleanse_results
+  WHERE  domain_name = 'HR'
 ),
-rule_hits AS (
-    SELECT DISTINCT TO_CHAR(R.TABROWID) AS TABROWID
-    FROM DQ_CLEANSE_RESULTS R
-    JOIN latest_batch LB
-      ON LB.BATCH_SEQ = R.BATCH_SEQ
-    WHERE R.PROCEDURE_NAME = 'DQ_EXISTS'
-      AND R.FIELD_NAME = 'DQ_PERSON_ID'
-),
-paired_relationships AS (
-    SELECT DISTINCT
-        LEAST(P1.PERSON_ID, P1.CONTACT_PERSON_ID) AS PAIR_PERSON_LOW,
-        GREATEST(P1.PERSON_ID, P1.CONTACT_PERSON_ID) AS PAIR_PERSON_HIGH
-    FROM DQ_PER_CONTACT_RELATIONSHIPS_V P1
-    JOIN DQ_PER_CONTACT_RELATIONSHIPS_V P2
-      ON P2.PERSON_ID = P1.CONTACT_PERSON_ID
-     AND P2.CONTACT_PERSON_ID = P1.PERSON_ID
-    JOIN rule_hits H1
-      ON H1.TABROWID = TO_CHAR(P1.TABROWID)
-    JOIN rule_hits H2
-      ON H2.TABROWID = TO_CHAR(P2.TABROWID)
-    WHERE P1.PERSON_ID < P1.CONTACT_PERSON_ID
-),
-rows_to_show AS (
-    SELECT
-        PR.PAIR_PERSON_LOW || '-' || PR.PAIR_PERSON_HIGH AS PAIR_GROUP,
-        1 AS SIDE,
-        P1.*
-    FROM paired_relationships PR
-    JOIN DQ_PER_CONTACT_RELATIONSHIPS_V P1
-      ON P1.PERSON_ID = PR.PAIR_PERSON_LOW
-     AND P1.CONTACT_PERSON_ID = PR.PAIR_PERSON_HIGH
-    JOIN rule_hits RH1
-      ON RH1.TABROWID = TO_CHAR(P1.TABROWID)
-
-    UNION ALL
-
-    SELECT
-        PR.PAIR_PERSON_LOW || '-' || PR.PAIR_PERSON_HIGH AS PAIR_GROUP,
-        2 AS SIDE,
-        P2.*
-    FROM paired_relationships PR
-    JOIN DQ_PER_CONTACT_RELATIONSHIPS_V P2
-      ON P2.PERSON_ID = PR.PAIR_PERSON_HIGH
-     AND P2.CONTACT_PERSON_ID = PR.PAIR_PERSON_LOW
-    JOIN rule_hits RH2
-      ON RH2.TABROWID = TO_CHAR(P2.TABROWID)
+anchors AS (
+  SELECT pcr.*
+  FROM   dq_per_contact_relationships_v pcr
+  WHERE EXISTS (
+          SELECT 1
+          FROM   dq_cleanse_results r
+                 JOIN latest_hr_batch b ON b.batch_seq = r.batch_seq
+          WHERE  r.procedure_name = 'DQ_EXISTS'
+            AND  r.field_name     = 'DQ_PERSON_ID'
+            AND  r.domain_name    = 'HR'
+            AND  r.start_value    = TO_CHAR(pcr.person_id)  -- or TO_CHAR(pcr.dq_person_id)
+       )
 )
 SELECT
-    RTS.PAIR_GROUP,
-    RTS.SIDE,
-    RTS.PERSON_ID,
-    PAPF.EMPLOYEE_NUMBER,
-    PAPF.FULL_NAME,
-    RTS.CONTACT_PERSON_ID,
-    CONTACT_PAPF.EMPLOYEE_NUMBER AS CONTACT_EMPLOYEE_NUMBER,
-    CONTACT_PAPF.FULL_NAME AS CONTACT_FULL_NAME,
-    RTS.CONTACT_TYPE,
-    LKUP.MEANING,
-    RTS.DATE_START,
-    RTS.DATE_END,
-    RTS.PRIMARY_CONTACT_FLAG,
-    RTS.PERSONAL_FLAG,
-    RTS.DEPENDENT_FLAG,
-    RTS.RLTD_PER_RSDS_W_DSGNTR_FLAG,
-    RTS.THIRD_PARTY_PAY_FLAG,
-    RTS.BONDHOLDER_FLAG,
-    RTS.BENEFICIARY_FLAG
-FROM rows_to_show RTS
-LEFT JOIN APPS.PER_ALL_PEOPLE_F PAPF
-  ON PAPF.PERSON_ID = RTS.PERSON_ID
- AND TRUNC(SYSDATE) BETWEEN PAPF.EFFECTIVE_START_DATE AND PAPF.EFFECTIVE_END_DATE
-LEFT JOIN APPS.PER_ALL_PEOPLE_F CONTACT_PAPF
-  ON CONTACT_PAPF.PERSON_ID = RTS.CONTACT_PERSON_ID
- AND TRUNC(SYSDATE) BETWEEN CONTACT_PAPF.EFFECTIVE_START_DATE AND CONTACT_PAPF.EFFECTIVE_END_DATE
-LEFT JOIN APPS.FND_LOOKUP_VALUES LKUP
-  ON LKUP.LOOKUP_CODE = RTS.CONTACT_TYPE
- AND LKUP.LOOKUP_TYPE = 'CONTACT'
- AND LKUP.ZD_EDITION_NAME = 'SET1'
-ORDER BY RTS.PAIR_GROUP, RTS.SIDE;
+  a.person_id            AS a_person_id,
+  a.contact_person_id    AS a_contact_person_id,
+  a.contact_type         AS a_contact_type,
+  a.date_start           AS a_date_start,
+  a.date_end             AS a_date_end,
+  r.person_id            AS r_person_id,
+  r.contact_person_id    AS r_contact_person_id,
+  r.contact_type         AS r_contact_type,
+  r.date_start           AS r_date_start,
+  r.date_end             AS r_date_end
+FROM anchors a
+JOIN dq_per_contact_relationships_v r
+  ON r.person_id         = a.contact_person_id
+ AND r.contact_person_id = a.person_id
+ORDER BY
+  LEAST(a.person_id, a.contact_person_id),
+  GREATEST(a.person_id, a.contact_person_id),
+  a.date_start;
